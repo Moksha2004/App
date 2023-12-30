@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+
+  <meta charset="UTF-8">
+  <title>Input Form</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    form {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    input[type="date"],
+    input[type="text"] {
+      padding: 10px;
+      margin-bottom: 15px;
+      width: calc(100% - 20px);
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    input[type="date"]:focus,
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #4CAF50;
+      box-shadow: 0 0 8px rgba(76, 175, 80, 0.6);
+    }
+
+    input[type="submit"],
+    button[type="submit"] {
+      padding: 12px 25px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
+
+    input[type="submit"]:hover,
+    button[type="submit"]:hover {
+      background-color: #45a049;
+    }
+   
+  </style>
+</head>
+<body>
+  <form action="/submit-form" method="post">
+    <label for="input1">Date</label>
+    <input type="date" id="input1" name="input1">
+
+    <label for="input2">Centre Name</label>
+    <input type="text" id="input2" name="input2">
+    
+    <label for="input3">Vehicle Number</label>
+    <input type="text" id="input3" name="input3">
+
+    <label for="input4">Bags</label>
+    <input type="text" id="input4" name="input4">
+
+    <label for="input5">Quantity</label>
+    <input type="text" id="input5" name="input5">
+
+    <label for="input6">Gunny details</label>
+    <input type="text" id="input6" name="input6">
+
+    <label for="input7">Bill No</label>
+    <input type="text" id="input7" name="input7">
+
+    <input type="submit" value="Submit">
+  </form>
+
+  <table id="dataTable">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Centre Name</th>
+        <th>Vehicle Number</th>
+        <th>Bags</th>
+        <th>Quantity</th>
+        <th>Gunny details</th>
+        <th>Bill No</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="inputTableBody">
+      <% inputs.forEach(input => { %>
+        <tr>
+          <td><%= input.input1 %></td>
+          <td><%= input.input2 %></td>
+          <td><%= input.input3 %></td>
+          <td><%= input.input4 %></td>
+          <td><%= input.input5 %></td>
+          <td><%= input.input6 %></td>
+          <td><%= input.input7 %></td>
+          <td><button onclick="deleteRow(this)" data-id="<%= input.id %>">Delete</button></td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+
+
+  <form action="/download-csv" method="get">
+    <button type="submit">Download CSV</button>
+  </form>
+
+  <script>
+      document.addEventListener("DOMContentLoaded", () => {
+    const inputs = document.querySelectorAll('input[type="text"], input[type="date"]');
+
+    inputs.forEach((input, index) => {
+      input.addEventListener('keydown', function(event) {
+        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+          event.preventDefault();
+          const nextIndex = (event.key === 'ArrowDown') ? (index + 1) % inputs.length : (index - 1 + inputs.length) % inputs.length;
+          inputs[nextIndex].focus();
+        }
+      });
+    });
+  });
+
+     document.addEventListener("DOMContentLoaded", () => {
+      flatpickr("#input1", {
+        enableTime: false, // If you want to enable time selection
+        dateFormat: "d-m-Y", // Date format
+        // Additional configurations
+      });
+    });
+    document.addEventListener("DOMContentLoaded", () => {
+      const input4 = document.getElementById("input4");
+      const input5 = document.getElementById("input5");
+
+      input4.addEventListener("input", () => {
+        const val4 = parseFloat(input4.value);
+        if (!isNaN(val4)) {
+          const val5 = (val4 * 0.4).toFixed(2);
+          input5.value = val5;
+        }
+      });
+    });
+    function deleteRow(btn) {
+      const row = btn.parentNode.parentNode;
+      const id = btn.getAttribute('data-id'); // Get the ID
+
+      row.parentNode.removeChild(row);
+
+      fetch(`/delete-row/${id}`, {
+        method: 'POST'
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Error deleting row');
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('Row deleted from the database:', data);
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        // Add code here to handle error, if required
+      });
+    }
+  </script>
+</body>
+</html>
