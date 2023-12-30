@@ -130,6 +130,9 @@
   </form>
 
   <script>
+    document.addEventListener("DOMContentLoaded", () => {
+  $('#dataTable').DataTable();
+});
       document.addEventListener("DOMContentLoaded", () => {
     const inputs = document.querySelectorAll('input[type="text"], input[type="date"]');
 
